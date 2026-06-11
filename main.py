@@ -8,6 +8,8 @@ size = sw, sh
 
 s = pygame.display.set_mode(size)
 
+clock = pygame.time.Clock()
+
 class Player():
     def __init__(self, x, y):
         self.x = x
@@ -20,22 +22,22 @@ class Player():
         ix = False
         iy = False
         if key[pygame.K_UP] or key[pygame.K_w]:
-            self.yvel -= 5
+            self.yvel -= 3
             iy = True
         if key[pygame.K_DOWN] or key[pygame.K_s]:
-            self.yvel += 5
+            self.yvel += 3
             iy = True
         if key[pygame.K_LEFT] or key[pygame.K_a]:
-            self.xvel -= 5
+            self.xvel -= 3
             ix = True
         if key[pygame.K_RIGHT] or key[pygame.K_d]:
-            self.xvel += 5
+            self.xvel += 3
             ix = True
 
         if not ix:
-            xvel *= 0.5
+            self.xvel *= 0.5
         if not iy:
-            yvel *= 0.5
+            self.yvel *= 0.5
         
         self.xvel = max(-10, min(10, self.xvel))
         self.yvel = max(-10, min(10, self.yvel))
@@ -60,5 +62,9 @@ while running:
 
     p1.move(keys)
     p1.draw(s)
+
+    pygame.display.flip()
+
+    clock.tick(60)
 
 pygame.quit()
