@@ -13,14 +13,29 @@ state = 'game'
 pygame.mouse.set_visible(False)
 
 selected = []
-collectables = {"paperclip": pygame.Rect(0, 0, 50, 50), "gun": pygame.Rect(750, 0, 50, 50)}
+collectables = {
+    "paperclip": pygame.Rect(200, 0, 50, 50),
+    "pencil": pygame.Rect(750, 0, 50, 50),
+    "tape": pygame.Rect(750, 550, 50, 50)
+}
 inventory_visibility = False
 craft_rect = pygame.Rect(sw/2-50, sh/2-50, 100, 100)
 cupboard_rect = pygame.Rect(-50, 475, 1000, 50)
 
 recipes = {
-    ('paperclip',): 'lockpick'
+    ('paperclip',): 'lockpick',
+    ('pencil', 'tape'): 'ladder'
 }
+
+crafted_message = ""
+message_timer = 0
+
+known_recipes = [
+    "Paperclip -> Lockpick",
+    "Pencil + Tape -> Ladder"
+]
+
+shelf_rect = pygame.Rect(-50, -50, 250, 700)
 
 class Player():
     def __init__(self, x, y):
@@ -60,7 +75,7 @@ class Player():
     def draw(self, surface):
         pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, 50, 50))
     
-    def collide(self, collectables, craft_rect, cupboard_rect, key):
+    def collide(self, collectables, craft_rect, cupboard_rect, shelf_rect, key):
         global state, selected
         collected = []
         rect = pygame.Rect(self.x, self.y, 50, 50)
@@ -88,6 +103,10 @@ class Player():
             if not ('lockpick' in self.inventory):
                 self.yvel = 0
                 self.y = 425 
+        if rect.colliderect(shelf_rect):
+            if "ladder" not in self.inventory:
+                self.x = shelf_rect.right
+                self.xvel = 0
 
         
         return(collected)
@@ -119,10 +138,17 @@ while running:
         
         pygame.draw.rect(s, (180, 105, 0), craft_rect)
         pygame.draw.rect(s, (130, 55, 0), cupboard_rect)
+        pygame.draw.rect(s, (120,80,40), shelf_rect)
             
 
         p1.move(keys)
-        for item in p1.collide(collectables, craft_rect, cupboard_rect, keys):
+        for item in p1.collide(
+            collectables,
+            craft_rect,
+            cupboard_rect,
+            shelf_rect,
+            keys
+        ):
             del collectables[str(item)]
         p1.draw(s)
 
@@ -138,7 +164,29 @@ while running:
                 p1.inventory.append(item)
                 p1.inventory.sort()
             selected.clear()
-        for i, item in enumerate(p1.inventory):
+
+        recipe_title = font.render(
+            "Known Recipes:",
+            True,
+            (255,255,255)
+        )
+
+        s.blit(recipe_title, (10,100))
+
+        for i, recipe in enumerate(known_recipes):
+
+            txt = font.render(
+                recipe,
+                True,
+                (200,200,200)
+            )
+
+            s.blit(
+                txt,
+                (10,130 + i * 25)
+            )
+            
+        for i, item in enumerate(p1.inventory[:]):
             text = font.render(item, True, (255, 255, 255))
             text_rect = pygame.Rect(10 + i * 100, 10, text.get_width(), text.get_height())
             s.blit(text, (10 + i * 100, 10))
@@ -147,10 +195,23 @@ while running:
                     selected.append(item)
                     p1.inventory.remove(item)
 
+        start_x = sw/2 - (len(selected) * 50)
+
         for i, item in enumerate(selected):
-            text = font.render(item, True, (255, 255, 255))
-            text_rect = pygame.Rect((sw/2 - len(selected * 150)) + i * 100, sh/2, text.get_width(), text.get_height())
-            s.blit(text, ((sw/2 - len(selected * 150)) + i * 100, sh/2))
+            text = font.render(item, True, (255,255,255))
+
+            text_rect = pygame.Rect(
+                start_x + i * 100,
+                sh/2,
+                text.get_width(),
+                text.get_height()
+            )
+
+            s.blit(
+                text,
+                (start_x + i * 100, sh/2)
+            )
+
             if text_rect.colliderect(mouse_rect):
                 if mouse1:
                     selected.remove(item)
@@ -162,19 +223,49 @@ while running:
 
         if finish_rect.colliderect(mouse_rect):
             if mouse1:
-                selected.sort()
-                key = tuple(selected)
-                selected.clear()
-                if key in list(recipes.keys()):
-                    p1.inventory.append(recipes[key])
+
+                key = tuple(sorted(selected))
+
+                if key in recipes:
+
+                    crafted_item = recipes[key]
+
+                    p1.inventory.append(crafted_item)
                     p1.inventory.sort()
+
+                    crafted_message = f"Created {crafted_item}!"
+                    message_timer = 180
+
                 else:
-                    p1.inventory.append('garbage')
+
+                    for item in selected:
+                        p1.inventory.append(item)
+
                     p1.inventory.sort()
-                print(str(key))
+
+                    crafted_message = "Nothing happened..."
+                    message_timer = 180
+
+                selected.clear()
         
 
-             
+        if message_timer > 0:
+
+            msg = font.render(
+                crafted_message,
+                True,
+                (255,255,0)
+            )
+
+            s.blit(
+                msg,
+                (
+                    sw//2 - msg.get_width()//2,
+                    50
+                )
+            )
+
+            message_timer -= 1
         
     pygame.draw.rect(s, (255, 255, 255), mouse_rect)
 
