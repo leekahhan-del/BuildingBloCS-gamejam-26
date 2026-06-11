@@ -7,10 +7,12 @@ sh = 600
 size = sw, sh
 
 s = pygame.display.set_mode(size)
-
 clock = pygame.time.Clock()
+font = pygame.font.Font(None, 20)
+state = 'game'
 
-collectables = {"apple": pygame.Rect(0, 0, 50, 50)}
+collectables = {"apple": pygame.Rect(0, 0, 50, 50), "gun": pygame.Rect(750, 0, 50, 50)}
+inventory_visibility = False
 
 class Player():
     def __init__(self, x, y):
@@ -35,6 +37,68 @@ class Player():
         if key[pygame.K_RIGHT] or key[pygame.K_d]:
             self.xvel += 3
             ix = True
+
+        if not ix:
+            self.xvel *= 0.5
+        if not iy:
+            self.yvel *= 0.5
+        
+        self.xvel = max(-10, min(10, self.xvel))
+        self.yvel = max(-10, min(10, self.yvel))
+
+        self.x += self.xvel
+        self.y += self.yvel
+    
+    def draw(self, surface):
+        pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, 50, 50))
+    
+    def collide(self, collectables, grid):
+        collected = []
+        rect = pygame.Rect(self.x, self.y, 50, 50)
+        for name, item_rect in collectables.items():
+            if rect.colliderect(item_rect):
+                collected.append(name)
+                self.inventory.append(name)
+                print(name)
+        
+        return(collected)
+        
+p1 = Player(sw/2 - 25, sh/2 - 25)
+
+running = True
+
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_i:
+                inventory_visibility = not inventory_visibility
+    s.fill((0, 0, 0))
+
+    keys = pygame.key.get_pressed()
+
+    if state == 'game':
+        for name, rect in collectables.items():
+            pygame.draw.rect(s, (255, 255, 0), rect)
+            
+
+        p1.move(keys)
+        for item in p1.collide(collectables, None):
+            del collectables[str(item)]
+        p1.draw(s)
+
+        # ui
+        if inventory_visibility:
+            for i, item in enumerate(p1.inventory):
+                text = font.render(item, True, (255, 255, 255))
+                s.blit(text, (10, 10 + i * 30))
+
+    pygame.display.flip()
+
+    clock.tick(60)
+
+pygame.quit()            ix = True
 
         if not ix:
             self.xvel *= 0.5
