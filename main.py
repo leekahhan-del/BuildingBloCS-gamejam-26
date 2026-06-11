@@ -54,27 +54,11 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    s.fill(0, 0, 0)
+    s.fill((0, 0, 0))
 
     keys = pygame.key.get_pressed()
 
     p1.move(keys)
     p1.draw(s)
-
-pygame.quit()        self.yvel = max(-10, min(10, self.yvel))
-
-        self.x += self.xvel
-        self.y += self.yvel
-    
-    def draw(self, surface):
-        pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, 50, 50))
-        
-
-running = True
-
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
 
 pygame.quit()
