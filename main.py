@@ -11,6 +11,8 @@ clock = pygame.time.Clock()
 font = pygame.font.Font(None, 20)
 state = 'game'
 pygame.mouse.set_visible(False)
+pygame.mixer.music.load("pygame track.mp3")
+pygame.mixer.music.play(-1)
 
 selected = []
 collectables = {
