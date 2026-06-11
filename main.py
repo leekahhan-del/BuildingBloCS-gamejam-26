@@ -10,6 +10,8 @@ s = pygame.display.set_mode(size)
 
 clock = pygame.time.Clock()
 
+collectables = {"apple": pygame.Rect(0, 0, 50, 50)}
+
 class Player():
     def __init__(self, x, y):
         self.x = x
@@ -47,8 +49,21 @@ class Player():
     
     def draw(self, surface):
         pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, 50, 50))
+    
+    def collide(self, collectables, grid):
+        collected = []
+        rect = pygame.Rect(self.x, self.y, 50, 50)
+        for item in range(len(collectables)):
+            item_rect = list(collectables.values())[item]
+            if rect.colliderect(item_rect):
+                name = list(collectables.keys())[item]
+                collected.append(name)
+                self.inventory.append(name)
+                print(name)
         
-p1 = Player(sw/2 - 50, sh/2 - 50)
+        return(collected)
+        
+p1 = Player(sw/2 - 25, sh/2 - 25)
 
 running = True
 
@@ -61,6 +76,8 @@ while running:
     keys = pygame.key.get_pressed()
 
     p1.move(keys)
+    for item in p1.collide(collectables, None):
+        del collectables[str(item)]
     p1.draw(s)
 
     pygame.display.flip()
