@@ -35,6 +35,12 @@ class Player():
         
         self.xvel = max(-10, min(10, self.xvel))
         self.yvel = max(-10, min(10, self.yvel))
+
+        self.x += self.xvel
+        self.y += self.yvel
+    
+    def draw(self, surface):
+        pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, 50, 50))
         
 
 running = True
